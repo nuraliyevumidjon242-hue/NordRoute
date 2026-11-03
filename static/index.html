@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101a2d">
+    <meta name="description" content="Echtzeit-Dispositionsdashboard für verteilte Logistik.">
+    <title>NordRoute · Disposition</title>
+    <link rel="stylesheet" href="/static/vendor/maplibre-gl.css">
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Hauptnavigation">
+        <a class="brand" href="/" aria-label="NordRoute Startseite">
+          <span class="brand-mark" aria-hidden="true">N</span>
+          <span class="brand-name">nord<span>route</span><small>LOGISTICS CONTROL</small></span>
+        </a>
+        <div class="workspace-label" data-i18n="workspace">LEITSTELLE</div>
+        <nav class="nav-list" id="navigation">
+          <button class="nav-item active" data-view="overview"><span class="nav-icon">⌂</span><span data-i18n="overview">Übersicht</span></button>
+          <button class="nav-item" data-view="fleet"><span class="nav-icon">▤</span><span data-i18n="fleet">Flotte</span><span class="nav-count" id="fleet-count">—</span></button>
+          <button class="nav-item" data-view="orders"><span class="nav-icon">▧</span><span data-i18n="orders">Aufträge</span><span class="nav-count" id="orders-count">—</span></button>
+          <button class="nav-item" data-view="routes"><span class="nav-icon">⌁</span><span data-i18n="routes">Routen</span></button>
+          <button class="nav-item" data-view="alerts"><span class="nav-icon">♧</span><span data-i18n="alerts">Meldungen</span><span class="nav-count alert-count" id="alert-count">—</span></button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="privacy-note"><span class="privacy-dot"></span><span data-i18n="privacy">Datenschutzmodus aktiv</span></div>
+          <div class="user-card"><div class="avatar">NR</div><div><strong id="user-name">—</strong><small id="user-role" data-i18n="dispatcher">Disposition</small></div><span class="user-menu">•••</span></div>
+        </div>
+      </aside>
+      <main class="main-content">
+        <header class="topbar">
+          <div class="mobile-brand"><span class="brand-mark">N</span><strong>nordroute</strong></div>
+          <div class="breadcrumb"><span data-i18n="workspace">LEITSTELLE</span><b>/</b><strong id="page-title">Übersicht</strong></div>
+          <div class="top-actions">
+            <span class="live-status"><span class="live-dot"></span><span data-i18n="live">LIVE</span></span>
+            <button class="icon-button theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Dark mode">◐</button>
+            <label class="sr-only" for="language">Language</label>
+            <select id="language" class="language-select" aria-label="Language">
+              <option value="de">DE</option><option value="en">EN</option><option value="uz">UZ</option>
+            </select>
+            <button class="button button-primary auth-button" id="login-button" hidden data-i18n="signIn">Anmelden</button>
+            <button class="button auth-button" id="logout-button" hidden data-i18n="signOut">Abmelden</button>
+            <div class="top-divider"></div>
+            <div class="today" id="today-label"></div>
+          </div>
+        </header>
+        <section class="page-content">
+          <div class="page-heading">
+            <div><p class="eyebrow" data-i18n="controlCenter">CONTROL CENTER · DEUTSCHLAND</p><h1 id="heading">Guten Tag, Leitstelle <span>↗</span></h1><p class="subheading" data-i18n="headingNote">Hier ist die Lage Ihrer Flotte in Echtzeit.</p></div>
+            <div class="heading-actions"><span class="updated-label"><span class="live-dot"></span><span id="last-updated">—</span></span><button class="button button-primary" id="optimize-button"><span>✦</span><span data-i18n="optimize">Routen optimieren</span></button></div>
+          </div>
+          <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+          <section id="kpi-grid" class="kpi-grid" aria-label="Key performance indicators"></section>
+          <section class="overview-grid" id="overview-grid">
+            <article class="panel map-panel">
+              <div class="panel-header"><div><h2 data-i18n="fleetMap">Flottenübersicht</h2><p data-i18n="livePositions">Live-Positionen in Deutschland</p></div><button class="subtle-button" data-view="fleet"><span data-i18n="allVehicles">Alle Fahrzeuge</span> <b>↗</b></button></div>
+              <div id="map" class="map-area" role="application" aria-label="Live fleet map"></div>
+              <div class="map-legend"><span><i class="legend-dot green"></i><span data-i18n="moving">Unterwegs</span></span><span><i class="legend-dot amber"></i><span data-i18n="waiting">Wartend</span></span><span><i class="legend-dot slate"></i><span data-i18n="break">Pause</span></span><span class="traffic-live" id="traffic-status" role="status">● —</span><button class="map-layer-toggle" id="traffic-toggle" aria-pressed="true" data-i18n="traffic">Echtzeitverkehr</button><span class="map-caption">© OpenStreetMap · CARTO</span></div>
+            </article>
+            <article class="panel alert-panel">
+              <div class="panel-header"><div><h2 data-i18n="attention">Aufmerksamkeit</h2><p data-i18n="activeNotifications">Aktive Meldungen</p></div><span class="panel-counter" id="open-alert-count">0</span></div>
+              <div id="alert-list" class="alert-list"></div>
+              <button class="full-width-link" data-view="alerts"><span data-i18n="allNotifications">Alle Meldungen ansehen</span> <b>→</b></button>
+            </article>
+          </section>
+          <section class="lower-grid" id="lower-grid">
+            <article class="panel orders-panel">
+              <div class="panel-header"><div><h2 data-i18n="recentOrders">Aktuelle Aufträge</h2><p data-i18n="orderOverview">Auftragsübersicht des heutigen Tages</p></div><button class="subtle-button" data-view="orders"><span data-i18n="allOrders">Alle Aufträge</span> <b>↗</b></button></div>
+              <div class="table-wrap" id="recent-orders"></div>
+            </article>
+            <article class="panel warehouse-panel">
+              <div class="panel-header"><div><h2 data-i18n="warehouses">Lagerauslastung</h2><p data-i18n="rampOccupancy">Rampenauslastung in Echtzeit</p></div><span class="live-mini"><span class="live-dot"></span> <span data-i18n="live">LIVE</span></span></div>
+              <div id="warehouse-list" class="warehouse-list"></div>
+            </article>
+          </section>
+          <section class="panel full-panel" id="detail-panel" hidden></section>
+          <footer class="footer"><span>NordRoute Dispatch · MVP 0.1</span><span data-i18n="demoDisclaimer">Demo-Daten · Keine produktive Rechts- oder Routenfreigabe</span></footer>
+        </section>
+      </main>
+    </div>
+    <script src="/static/vendor/maplibre-gl.js" defer></script>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

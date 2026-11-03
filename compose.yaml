@@ -1,0 +1,58 @@
+services:
+  scheduler:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      AUTH_MODE: oidc
+      DATABASE_PATH: /app/data/scheduler.db
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/nordroute}
+      OIDC_BROWSER_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/nordroute}
+      OIDC_JWKS_URL: http://keycloak:8080/realms/nordroute/protocol/openid-connect/certs
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-nordroute-dashboard}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-nordroute-dashboard}
+      TOMTOM_API_KEY: ${TOMTOM_API_KEY:?Set TOMTOM_API_KEY in .env}
+      VALHALLA_URL: http://valhalla:8002
+      MAP_STYLE_URL: ${MAP_STYLE_URL:-https://basemaps.cartocdn.com/gl/positron-gl-style/style.json}
+      TRAFFIC_CACHE_TTL_SECONDS: ${TRAFFIC_CACHE_TTL_SECONDS:-60}
+    volumes:
+      - scheduler-data:/app/data
+    depends_on:
+      - keycloak
+      - valhalla
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.2
+    command: ["start-dev", "--import-realm", "--hostname-strict=false"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Set a strong KEYCLOAK_ADMIN_PASSWORD in .env}
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infra/keycloak/nordroute-realm.json:/opt/keycloak/data/import/nordroute-realm.json:ro
+      - keycloak-data:/opt/keycloak/data
+    restart: unless-stopped
+
+  valhalla:
+    image: ghcr.io/valhalla/valhalla-scripted:latest
+    environment:
+      tile_urls: https://download.geofabrik.de/europe/germany-latest.osm.pbf
+      server_threads: ${VALHALLA_THREADS:-2}
+      build_elevation: "False"
+      build_tar: "True"
+      use_default_speeds_config: "False"
+      serve_tiles: "True"
+    ports:
+      - "8002:8002"
+    volumes:
+      - valhalla-data:/custom_files
+    restart: unless-stopped
+
+volumes:
+  scheduler-data:
+  keycloak-data:
+  valhalla-data:
