@@ -1,12 +1,12 @@
 # NordRoute — AI-Driven Distributed Logistics Scheduler
 
-![License](https://shields.io)
-![Python](https://shields.io)
-![FastAPI](https://shields.io)
-![OR-Tools](https://shields.io)
-![Valhalla](https://shields.io)
-![Keycloak](https://shields.io)
-![Docker](https://shields.io)
+![License](https://badgen.net)
+![Python](https://badgen.net)
+![FastAPI](https://badgen.net)
+![OR-Tools](https://badgen.net)
+![Valhalla](https://badgen.net)
+![Keycloak](https://badgen.net)
+![Docker](https://badgen.net)
 
 > **Languages:** O'zbekcha | Deutsch | English  
 > Open-source distributed logistics & freight routing scheduler built on self-hosted Valhalla, Google OR-Tools, TomTom Traffic Flow, MapLibre GL, and Keycloak RBAC.
